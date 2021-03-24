@@ -1,19 +1,14 @@
-import { createStore } from 'redux'
-import { loadState, saveState } from './localStorage'
-import debounce from 'lodash/debounce'
+import { createStore, applyMiddleware } from 'redux'
+import promise from 'redux-promise'
+import logger from 'redux-logger'
 import todoApp from './reducers'
 
 const configureStore = () => {
-  const persistedState = loadState()
-  const store = createStore(todoApp, persistedState)
-  store.subscribe(
-    debounce(() => {
-      console.log('save')
-      saveState({
-        todos: store.getState().todos,
-      })
-    }, 1000)
-  )
+  const middlewares = [promise] // 中间件
+  if (process.env.NODE_ENV !== 'production') {
+    middlewares.push(logger)
+  }
+  const store = createStore(todoApp, applyMiddleware(...middlewares))
   return store
 }
 
